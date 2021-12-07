@@ -34,8 +34,10 @@ namespace vpos.seb.business.Payments
         /// </summary>
         /// <returns>The balance.</returns>
         /// <param name="balanceOperation">Balance operation.</param>
+        [System.Obsolete]
         public Result<decimal> Balance(BalanceOperation balanceOperation)
         {
+            //Validate account details
             BalanceOperationValidator.SetupRules();
 
             var validationResult = BalanceOperationValidator.Validate(balanceOperation);
@@ -53,7 +55,7 @@ namespace vpos.seb.business.Payments
             if (pin == null)
                 return Result.Fail<decimal>(ResponseCodes.A1001.ToString());
 
-
+            //Valid user - return balance on account
             return Result.Ok<decimal>(account.Balance);
         }
 
@@ -62,6 +64,7 @@ namespace vpos.seb.business.Payments
         /// </summary>
         /// <returns>The deposit.</returns>
         /// <param name="depositOperation">Deposit operation.</param>
+        [System.Obsolete]
         public Result Deposit(DepositOperation depositOperation)
         {
             DepositOperationValidator.SetupRules();
@@ -79,18 +82,21 @@ namespace vpos.seb.business.Payments
 
             if (pin == null)
                 return Result.Fail<decimal>(ResponseCodes.A1001.ToString());
-
+            
+            //Add amount to balance and save changes
             account.Balance += depositOperation.DepositAmount;
             AppDbContext.Update(account);
             AppDbContext.SaveChanges();
 
             return Result.Ok();
         }
+
         /// <summary>
         /// Withdraw the specified withDrawOperation.
         /// </summary>
         /// <returns>The withdraw.</returns>
         /// <param name="withDrawOperation">With draw operation.</param>
+        [System.Obsolete]
         public Result Withdraw(WithdrawOperation withDrawOperation)
         {
             WithdrawOperationValidator.SetupRules();
@@ -112,6 +118,7 @@ namespace vpos.seb.business.Payments
             if (account.Balance < withDrawOperation.WithdrawAmount)
                 return Result.Fail(ResponseCodes.W1003.ToString());
 
+            //Subtract amount from balance and save changes
             account.Balance -= withDrawOperation.WithdrawAmount;
             AppDbContext.Update(account);
             AppDbContext.SaveChanges();

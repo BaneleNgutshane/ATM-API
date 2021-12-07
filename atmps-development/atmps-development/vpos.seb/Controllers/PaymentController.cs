@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using vpos.contract.Controllers;
 using vpos.contract.Requests;
 using vpos.seb.business.Payments;
@@ -15,42 +16,44 @@ namespace vpos.seb.Controllers
         {
             PaymentManager = paymentManager;
         }
-
+        
         [HttpPost("Balance_enquiry")]
-        [ProducesResponseType(200, Type = typeof(decimal))]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(decimal))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        
+
         public IActionResult Balance([FromBody] BalanceRequest balanceRequest)
         {
-            var result = PaymentManager.Balance(new BalanceOperation
+            var response = PaymentManager.Balance(new BalanceOperation
             {
                 AccountNumber = balanceRequest.AccountNumber,
                 PinCode = balanceRequest.PinCode
             });
 
-            if (!result.IsSuccess)
+            if (!response.IsSuccess)
             {
-                return BadRequest(result.Error);
+                return BadRequest(response.Error);
             }
 
-            return Ok(result.Value);
+            return Ok(response.Value);
         }
 
 
         [HttpPost("Withdraw_cash")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult Withdraw([FromBody] WithdrawRequest withdrawRequest)
         {
-            var result = PaymentManager.Withdraw(new WithdrawOperation
+            var response = PaymentManager.Withdraw(new WithdrawOperation
             {
                 AccountNumber = withdrawRequest.AccountNumber,
                 PinCode = withdrawRequest?.PinCode,
                 WithdrawAmount = withdrawRequest.WithdrawAmount
             });
 
-            if (!result.IsSuccess)
+            if (!response.IsSuccess)
             {
-                return BadRequest(result.Error);
+                return BadRequest(response.Error);
             }
 
             return Ok();
@@ -58,20 +61,20 @@ namespace vpos.seb.Controllers
 
         
         [HttpPost("Deposit_cash")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public IActionResult Deposit([FromBody] DepositRequest depositRequest)
         {
-            var result = PaymentManager.Deposit(new DepositOperation
+            var response = PaymentManager.Deposit(new DepositOperation
             {
                 AccountNumber = depositRequest.AccountNumber,
                 PinCode = depositRequest.PinCode,
                 DepositAmount = depositRequest.DepositAmount
             });
 
-            if (!result.IsSuccess)
+            if (!response.IsSuccess)
             {
-                return BadRequest(result.Error);
+                return BadRequest(response.Error);
             }
 
             return Ok();
